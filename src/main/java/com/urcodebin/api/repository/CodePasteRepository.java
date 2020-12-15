@@ -11,16 +11,14 @@ import java.util.UUID;
 
 public interface CodePasteRepository extends JpaRepository<CodePaste, UUID> {
 
-    @Query(value = "SELECT c \n" +
-            "FROM \n" +
+    @Query(value = "FROM \n" +
             "   #{#entityName} c \n" +
             "WHERE \n" +
             "   c.pasteTitle LIKE %?1% AND \n" +
             "   c.pasteVisibility = 'PUBLIC'")
     List<CodePaste> findCodePastesContainTitle(String pasteTitle, Pageable pageLimit);
 
-    @Query(value = "SELECT c \n" +
-            "FROM \n" +
+    @Query(value = "FROM \n" +
             "   #{#entityName} c \n" +
             "WHERE \n" +
             "   c.pasteTitle LIKE %?1% AND \n" +
