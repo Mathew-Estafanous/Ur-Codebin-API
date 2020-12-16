@@ -2,7 +2,6 @@ package com.urcodebin.api.services;
 
 import com.urcodebin.api.entities.CodePaste;
 import com.urcodebin.api.enums.PasteSyntax;
-import com.urcodebin.api.enums.PasteVisibility;
 import com.urcodebin.api.repository.CodePasteRepository;
 import com.urcodebin.api.services.interfaces.CodePasteService;
 import org.slf4j.Logger;
