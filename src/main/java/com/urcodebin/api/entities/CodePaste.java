@@ -1,6 +1,12 @@
 package com.urcodebin.api.entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.urcodebin.api.enums.PasteSyntax;
 import com.urcodebin.api.enums.PasteVisibility;
 
@@ -19,28 +25,37 @@ public class CodePaste {
 
     @Id
     @Column(name = "paste_id", unique = true, nullable = false, length = 16)
+    @JsonProperty("paste_id")
     private final UUID pasteId = UUID.randomUUID();
 
     @NotNull
     @Lob
     @Column(name = "source_code", table = "source_table")
+    @JsonProperty("source_code")
     private String sourceCode;
 
     @Column(name = "paste_title")
+    @JsonProperty("paste_title")
     private String pasteTitle;
 
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "paste_syntax")
+    @JsonProperty("paste_syntax")
     private PasteSyntax pasteSyntax;
 
     @NotNull
     @Column(name = "paste_Expiration")
+    @JsonProperty("paste_expiration")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime pasteExpirationDate;
 
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "paste_visibility")
+    @JsonProperty("paste_visibility")
     private PasteVisibility pasteVisibility;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -93,11 +108,11 @@ public class CodePaste {
         this.pasteSyntax = pasteSyntax;
     }
 
-    public LocalDateTime getPasteExpiration() {
+    public LocalDateTime getPasteExpirationDate() {
         return pasteExpirationDate;
     }
 
-    public void setPasteExpiration(LocalDateTime pasteExpirationDate) {
+    public void setPasteExpirationDate(LocalDateTime pasteExpirationDate) {
         this.pasteExpirationDate = pasteExpirationDate;
     }
 
