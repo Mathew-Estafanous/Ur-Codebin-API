@@ -133,7 +133,7 @@ public class CodePasteControllerTests {
     }
 
     @Test
-    public void getPublicPastesWithNoPasteTitleParameterReturnsListOfFoundPastes() throws Exception {
+    public void getPublicPastesWithMissingPasteTitleParameterReturnsListOfFoundPastes() throws Exception {
         when(codePasteService.findListOfCodePastesBy("", PasteSyntax.JAVA, 2))
                 .thenReturn(Arrays.asList(firstPaste, secondPaste));
 
@@ -150,7 +150,7 @@ public class CodePasteControllerTests {
     }
 
     @Test
-    public void getPublicPasteWithNoPasteSyntaxParameterReturnsListOfFoundPastes() throws Exception {
+    public void getPublicPasteWithMissingPasteSyntaxParameterReturnsListOfFoundPastes() throws Exception {
         when(codePasteService.findListOfCodePastesBy("My", 2))
                 .thenReturn(Arrays.asList(firstPaste, secondPaste));
 
@@ -165,6 +165,63 @@ public class CodePasteControllerTests {
 
         verify(codePasteService, times(0))
                 .findListOfCodePastesBy(anyString(), any(PasteSyntax.class), anyInt());
+    }
+
+    @Test
+    public void getPublicPasteWithInvalidPasteSyntaxParameterResultsInHttpBadRequest() throws Exception {
+        final MockHttpServletRequestBuilder request = get("/api/paste/public")
+                .param("paste_title", "My")
+                .param("paste_syntax", "Invalid Input")
+                .param("limit", "2");
+
+        mockMvc.perform(request)
+                .andExpect(status().isBadRequest());
+
+        verify(codePasteService, times(0))
+                .findListOfCodePastesBy(anyString(), any(PasteSyntax.class), anyInt());
+        verify(codePasteService, times(0))
+                .findListOfCodePastesBy(anyString(), anyInt());
+    }
+
+    @Test
+    public void getPublicPasteWithMissingLimitParameterReturnsListOfFoundPastes() throws Exception {
+        when(codePasteService.findListOfCodePastesBy("My", PasteSyntax.JAVA, 5))
+                .thenReturn(Arrays.asList(firstPaste, secondPaste));
+
+        final MockHttpServletRequestBuilder request = get("/api/paste/public")
+                .param("paste_title", "My")
+                .param("paste_syntax", "JAVA");
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].*", is(convertPasteToList(firstPaste))))
+                .andExpect(jsonPath("$[1].*", is(convertPasteToList(secondPaste))));
+
+        verify(codePasteService, times(0))
+                .findListOfCodePastesBy(anyString(), anyInt());
+    }
+
+    @Test
+    public void getPublicPasteWithOutOfBoundsLimitParameterResultsInHttpBadRequest() throws Exception {
+        final MockHttpServletRequestBuilder belowLimitRequest = get("/api/paste/public")
+                .param("paste_title", "My")
+                .param("paste_syntax", "Invalid Input")
+                .param("limit", "0");
+
+        final MockHttpServletRequestBuilder moreThanLimitRequest = get("/api/paste/public")
+                .param("paste_title", "My")
+                .param("paste_syntax", "Invalid Input")
+                .param("limit", "21");
+
+        mockMvc.perform(belowLimitRequest)
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(moreThanLimitRequest)
+                .andExpect(status().isBadRequest());
+
+        verify(codePasteService, times(0))
+                .findListOfCodePastesBy(anyString(), any(PasteSyntax.class), anyInt());
+        verify(codePasteService, times(0))
+                .findListOfCodePastesBy(anyString(), anyInt());
     }
 
     private List<Object> convertPasteToList(CodePaste codePastes) {
