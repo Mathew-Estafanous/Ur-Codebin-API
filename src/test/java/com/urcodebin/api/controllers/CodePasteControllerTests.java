@@ -96,11 +96,48 @@ public class CodePasteControllerTests {
     }
 
     @Test
-    public void getPasteIdWithInvalidIdFormatResultsInHttpBadRequest() throws Exception {
+    public void getPasteWithInvalidIdFormatResultsInHttpBadRequest() throws Exception {
         mockMvc.perform(get(PASTE_FROM_ID_PATH, "Invalid UUID Format"))
                 .andExpect(status().isBadRequest());
 
         verify(codePasteService, times(0)).findByCodePasteId(any(UUID.class));
+    }
+
+    @Test
+    public void deletePasteWithCorrectIdResultsInHttpOkRequest() throws Exception {
+        when(codePasteService.doesCodePasteWithIdExist(firstPaste.getPasteId())).thenReturn(true);
+
+        mockMvc.perform(delete(PASTE_FROM_ID_PATH, firstPaste.getPasteId().toString()))
+                .andExpect(status().isOk());
+
+        verify(codePasteService, times(1))
+                .doesCodePasteWithIdExist(firstPaste.getPasteId());
+        verify(codePasteService, times(1))
+                .deleteCodePasteById(firstPaste.getPasteId());
+    }
+
+    @Test
+    public void deletePasteWithInvalidIdFormatResultsInHttpBadRequest() throws Exception {
+        mockMvc.perform(delete(PASTE_FROM_ID_PATH, "Wrong ID Format"))
+                .andExpect(status().isBadRequest());
+
+        verify(codePasteService, times(0))
+                .doesCodePasteWithIdExist(any(UUID.class));
+        verify(codePasteService, times(0))
+                .deleteCodePasteById(any(UUID.class));
+    }
+
+    @Test
+    public void deletePasteWithWrongIdResultsInHttpNotFound() throws Exception {
+        when(codePasteService.doesCodePasteWithIdExist(any(UUID.class))).thenReturn(false);
+
+        mockMvc.perform(delete(PASTE_FROM_ID_PATH, UUID.randomUUID().toString()))
+                .andExpect(status().isNotFound());
+
+        verify(codePasteService, times(1))
+                .doesCodePasteWithIdExist(any(UUID.class));
+        verify(codePasteService, times(0))
+                .deleteCodePasteById(any(UUID.class));
     }
 
     @Test
