@@ -1,7 +1,9 @@
 package com.urcodebin.api.controllers;
 
+import com.urcodebin.api.controllers.requestbody.PasteRequestBody;
 import com.urcodebin.api.entities.CodePaste;
 import com.urcodebin.api.enums.PasteSyntax;
+import com.urcodebin.api.error.exception.MissingRequiredSourceCodeException;
 import com.urcodebin.api.error.exception.PasteNotFoundException;
 import com.urcodebin.api.services.interfaces.CodePasteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +54,13 @@ public class CodePasteController {
 
         PasteSyntax pasteSyntaxToSearch = createPasteSyntaxFromString(pasteSyntax);
         return codePasteService.findListOfCodePastesBy(pasteTitle, pasteSyntaxToSearch, limit);
+    }
+
+    @PostMapping
+    public CodePaste postNewCodePasteWith(@RequestBody PasteRequestBody pasteRequestBody) {
+        if(pasteRequestBody.getSourceCode().isEmpty())
+            throw new MissingRequiredSourceCodeException("Required field (source_code) is missing.");
+        return null;
     }
 
     private UUID createUUIDFromString(String stringId) {

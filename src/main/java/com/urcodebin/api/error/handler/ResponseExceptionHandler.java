@@ -1,9 +1,11 @@
 package com.urcodebin.api.error.handler;
 
+import com.urcodebin.api.error.exception.MissingRequiredSourceCodeException;
 import com.urcodebin.api.error.exception.PasteNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -14,7 +16,7 @@ import java.time.LocalDateTime;
 @ControllerAdvice
 public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(value = { IllegalArgumentException.class })
+    @ExceptionHandler(value = { IllegalArgumentException.class, MissingRequiredSourceCodeException.class })
     public ResponseEntity<Object> handleIllegalArgument(final RuntimeException exception, final WebRequest request) {
         return baseExceptionHandler(exception, request, HttpStatus.BAD_REQUEST);
     }
@@ -22,6 +24,12 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(value = {PasteNotFoundException.class})
     public ResponseEntity<Object> handleNotFound(final RuntimeException exception, final WebRequest request) {
         return baseExceptionHandler(exception, request, HttpStatus.NOT_FOUND);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
+                                                                  HttpHeaders headers, HttpStatus status, WebRequest request) {
+        return baseExceptionHandler(ex, request, HttpStatus.BAD_REQUEST);
     }
 
     private ResponseEntity<Object> baseExceptionHandler(final RuntimeException exception, final WebRequest request,
