@@ -23,15 +23,15 @@ public class CodePasteController {
         this.codePasteService = codePasteService;
     }
 
-    @GetMapping(path = "/{pasteId}")
-    public CodePaste getCodePasteFromId(@PathVariable("pasteId") String pasteId) {
+    @GetMapping(path = "/{paste_id}")
+    public CodePaste getCodePasteFromId(@PathVariable("paste_id") String pasteId) {
         UUID pasteUUID = createUUIDFromString(pasteId);
         Optional<CodePaste> foundPasteId = codePasteService.findByCodePasteId(pasteUUID);
         return foundPasteId.orElseThrow(() -> new PasteNotFoundException("No CodePaste has been found with the given id."));
     }
 
-    @DeleteMapping(path = "/{pasteId}")
-    public void deleteCodePasteWithId(@PathVariable("pasteId") String pasteId) {
+    @DeleteMapping(path = "/{paste_id}")
+    public void deleteCodePasteWithId(@PathVariable("paste_id") String pasteId) {
         UUID pasteUUID = createUUIDFromString(pasteId);
         if(!codePasteService.doesCodePasteWithIdExist(pasteUUID))
             throw new PasteNotFoundException("No CodePaste has been found with the given id.");
