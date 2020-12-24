@@ -100,4 +100,28 @@ public class CodePasteServiceTests {
                     fakeCodePaste.getPasteTitle(), PasteSyntax.CLANG, 1);
         Assert.assertTrue(listOfCodePastes.isEmpty());
     }
+
+    @Test
+    public void doesCodePasteWithIdExistWithCorrectIdReturnsTrue() {
+        UUID expectedID = UUID.randomUUID();
+        when(codePasteRepository.existsById(expectedID)).thenReturn(true);
+
+        final boolean doesCodePasteExist = codePasteService.doesCodePasteWithIdExist(expectedID);
+        Assert.assertTrue(doesCodePasteExist);
+    }
+
+    @Test
+    public void doesCodePasteWithIdExistWithWrongIdReturnsFalse() {
+        when(codePasteRepository.existsById(any(UUID.class))).thenReturn(false);
+
+        final boolean doesCodePasteExist = codePasteService.doesCodePasteWithIdExist(UUID.randomUUID());
+        Assert.assertFalse(doesCodePasteExist);
+    }
+
+    @Test
+    public void deleteCodePasteByIdWithValidIdCausesRepositoryDeleteByIdToBeCalled() {
+        codePasteService.deleteCodePasteById(UUID.randomUUID());
+
+        verify(codePasteRepository, times(1)).deleteById(any(UUID.class));
+    }
 }
