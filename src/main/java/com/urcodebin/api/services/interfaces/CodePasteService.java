@@ -14,4 +14,8 @@ public interface CodePasteService {
     List<CodePaste> findListOfCodePastesBy(String pasteTitle, PasteSyntax pasteSyntax, int limit);
 
     List<CodePaste> findListOfCodePastesBy(String pasteTitle, int limit);
+
+    void deleteCodePasteById(UUID pasteUUID);
+
+    boolean doesCodePasteWithIdExist(UUID id);
 }

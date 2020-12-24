@@ -25,14 +25,18 @@ public class CodePasteController {
 
     @GetMapping(path = "/{pasteId}")
     public CodePaste getCodePasteFromId(@PathVariable("pasteId") String pasteId) {
-        UUID pasteUUID;
-        try {
-            pasteUUID = UUID.fromString(pasteId);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid UUID format, please format properly!");
-        }
+        UUID pasteUUID = createUUIDFromString(pasteId);
         Optional<CodePaste> foundPasteId = codePasteService.findByCodePasteId(pasteUUID);
         return foundPasteId.orElseThrow(() -> new PasteNotFoundException("No CodePaste has been found with the given id."));
+    }
+
+    @DeleteMapping(path = "/{pasteId}")
+    public void deleteCodePasteWithId(@PathVariable("pasteId") String pasteId) {
+        UUID pasteUUID = createUUIDFromString(pasteId);
+        if(!codePasteService.doesCodePasteWithIdExist(pasteUUID))
+            throw new PasteNotFoundException("No CodePaste has been found with the given id.");
+
+        codePasteService.deleteCodePasteById(pasteUUID);
     }
 
     @GetMapping(path = "/public")
@@ -48,6 +52,14 @@ public class CodePasteController {
 
         PasteSyntax pasteSyntaxToSearch = createPasteSyntaxFromString(pasteSyntax);
         return codePasteService.findListOfCodePastesBy(pasteTitle, pasteSyntaxToSearch, limit);
+    }
+
+    private UUID createUUIDFromString(String stringId) {
+        try {
+            return UUID.fromString(stringId);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid UUID format, please format properly!");
+        }
     }
 
     private PasteSyntax createPasteSyntaxFromString(String pasteSyntax) {

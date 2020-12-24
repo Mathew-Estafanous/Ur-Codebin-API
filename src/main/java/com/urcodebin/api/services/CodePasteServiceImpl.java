@@ -36,13 +36,27 @@ public class CodePasteServiceImpl implements CodePasteService {
 
     @Override
     public List<CodePaste> findListOfCodePastesBy(String pasteTitle, PasteSyntax pasteSyntax, int limit) {
+        LOGGER.info("Finding List Of CodePastes with title of {} and syntax of {}.", pasteTitle, pasteSyntax);
         Pageable pageLimit = PageRequest.of(0, limit);
         return codePasteRepository.findCodePastesContaining(pasteTitle, pasteSyntax, pageLimit);
     }
 
     @Override
     public List<CodePaste> findListOfCodePastesBy(String pasteTitle, int limit) {
+        LOGGER.info("Finding List Of CodePastes with title of {}.", pasteTitle);
         Pageable pageLimit = PageRequest.of(0, limit);
         return codePasteRepository.findCodePastesContainTitle(pasteTitle, pageLimit);
+    }
+
+    @Override
+    public void deleteCodePasteById(UUID pasteUUID) {
+        LOGGER.info("Deleting CodePaste with ID {}.", pasteUUID);
+        codePasteRepository.deleteById(pasteUUID);
+    }
+
+    @Override
+    public boolean doesCodePasteWithIdExist(UUID id) {
+        LOGGER.info("Checking if CodePaste with ID: {} exists.", id);
+        return codePasteRepository.existsById(id);
     }
 }
