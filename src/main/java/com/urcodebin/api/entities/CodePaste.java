@@ -3,9 +3,7 @@ package com.urcodebin.api.entities;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.urcodebin.api.enums.PasteSyntax;
 import com.urcodebin.api.enums.PasteVisibility;
@@ -16,7 +14,6 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
-@SuppressWarnings("unused")
 @Entity
 @Table(name = "code_paste")
 @SecondaryTable(name = "source_table",
@@ -48,7 +45,6 @@ public class CodePaste {
     @Column(name = "paste_Expiration")
     @JsonProperty("paste_expiration_date")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime pasteExpirationDate;
 
