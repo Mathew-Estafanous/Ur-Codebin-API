@@ -20,6 +20,11 @@ public class CodePasteController {
 
     private final CodePasteService codePasteService;
 
+    private static final int MAX_TITLE_LENGTH = 50;
+    private static final int MIN_TITLE_LENGTH = 1;
+    private static final int MAX_SEARCH_LIMIT = 20;
+    private static final int MIN_SEARCH_LIMIT = 1;
+
     @Autowired
     public CodePasteController(@Qualifier("PasteService") CodePasteService codePasteService) {
         this.codePasteService = codePasteService;
@@ -46,7 +51,7 @@ public class CodePasteController {
                 @RequestParam(value = "paste_title", defaultValue = "") String pasteTitle,
                 @RequestParam(value = "paste_syntax", required = false) String pasteSyntax,
                 @RequestParam(value = "limit", defaultValue = "5") int limit) {
-        if(limit > 20 || limit < 1)
+        if(limit > MAX_SEARCH_LIMIT || limit < MIN_SEARCH_LIMIT)
             throw new IllegalArgumentException("limit number must be between 1 and 20.");
 
         if(pasteSyntax == null)
@@ -60,6 +65,13 @@ public class CodePasteController {
     public CodePaste postNewCodePasteWith(@RequestBody PasteRequestBody pasteRequestBody) {
         if(pasteRequestBody.getSourceCode().isEmpty())
             throw new MissingRequiredSourceCodeException("Required field (source_code) is missing.");
+
+        int titleLength = pasteRequestBody.getPasteTitle().length();
+        if(titleLength > MAX_TITLE_LENGTH || titleLength < MIN_TITLE_LENGTH) {
+            String errorMsg = String.format("Paste Title field length must be within %s and %s",
+                                                MIN_TITLE_LENGTH, MAX_TITLE_LENGTH);
+            throw new IllegalArgumentException(errorMsg);
+        }
         return codePasteService.createNewCodePaste(pasteRequestBody);
     }
 
