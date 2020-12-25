@@ -46,7 +46,7 @@ public class CodePaste {
 
     @NotNull
     @Column(name = "paste_Expiration")
-    @JsonProperty("paste_expiration")
+    @JsonProperty("paste_expiration_date")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
