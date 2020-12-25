@@ -37,45 +37,26 @@ public class PasteRequestBody {
         this.pasteSyntax = PasteSyntax.NONE;
         this.pasteVisibility = PasteVisibility.PRIVATE;
         this.pasteExpiration = PasteExpiration.ONEHOUR;
+        this.sourceCode = "";
     }
 
     public String getPasteTitle() {
         return pasteTitle;
     }
 
-    public void setPasteTitle(String pasteTitle) {
-        this.pasteTitle = pasteTitle;
-    }
-
     public PasteSyntax getPasteSyntax() {
         return pasteSyntax;
-    }
-
-    public void setPasteSyntax(PasteSyntax pasteSyntax) {
-        this.pasteSyntax = pasteSyntax;
     }
 
     public PasteVisibility getPasteVisibility() {
         return pasteVisibility;
     }
 
-    public void setPasteVisibility(PasteVisibility pasteVisibility) {
-        this.pasteVisibility = pasteVisibility;
-    }
-
     public PasteExpiration getPasteExpiration() {
         return pasteExpiration;
     }
 
-    public void setPasteExpiration(PasteExpiration pasteExpiration) {
-        this.pasteExpiration = pasteExpiration;
-    }
-
     public String getSourceCode() {
         return sourceCode;
-    }
-
-    public void setSourceCode(String sourceCode) {
-        this.sourceCode = sourceCode;
     }
 }

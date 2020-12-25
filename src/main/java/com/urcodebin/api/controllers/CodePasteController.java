@@ -60,7 +60,7 @@ public class CodePasteController {
     public CodePaste postNewCodePasteWith(@RequestBody PasteRequestBody pasteRequestBody) {
         if(pasteRequestBody.getSourceCode().isEmpty())
             throw new MissingRequiredSourceCodeException("Required field (source_code) is missing.");
-        return null;
+        return codePasteService.createNewCodePaste(pasteRequestBody);
     }
 
     private UUID createUUIDFromString(String stringId) {

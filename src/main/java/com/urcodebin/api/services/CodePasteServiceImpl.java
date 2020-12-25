@@ -1,6 +1,8 @@
 package com.urcodebin.api.services;
 
+import com.urcodebin.api.controllers.requestbody.PasteRequestBody;
 import com.urcodebin.api.entities.CodePaste;
+import com.urcodebin.api.enums.PasteExpiration;
 import com.urcodebin.api.enums.PasteSyntax;
 import com.urcodebin.api.repository.CodePasteRepository;
 import com.urcodebin.api.services.interfaces.CodePasteService;
@@ -11,6 +13,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,6 +54,13 @@ public class CodePasteServiceImpl implements CodePasteService {
     }
 
     @Override
+    public CodePaste createNewCodePaste(PasteRequestBody requestBody) {
+        CodePaste pasteToCreate = generateCodePasteFrom(requestBody);
+        LOGGER.info("Saving new Code Paste with ID: {},", pasteToCreate.getPasteId());
+        return codePasteRepository.save(pasteToCreate);
+    }
+
+    @Override
     public void deleteCodePasteById(UUID pasteUUID) {
         LOGGER.info("Deleting CodePaste with ID {}.", pasteUUID);
         codePasteRepository.deleteById(pasteUUID);
@@ -58,5 +70,22 @@ public class CodePasteServiceImpl implements CodePasteService {
     public boolean doesCodePasteWithIdExist(UUID id) {
         LOGGER.info("Checking if CodePaste with ID: {} exists.", id);
         return codePasteRepository.existsById(id);
+    }
+
+    private CodePaste generateCodePasteFrom(PasteRequestBody requestBody) {
+        CodePaste paste = new CodePaste();
+        paste.setSourceCode(requestBody.getSourceCode());
+        paste.setPasteVisibility(requestBody.getPasteVisibility());
+        paste.setPasteSyntax(requestBody.getPasteSyntax());
+        paste.setPasteTitle(requestBody.getPasteTitle());
+
+        LocalDateTime expirationDate = convertToLocalDateTime(requestBody.getPasteExpiration());
+        paste.setPasteExpirationDate(expirationDate);
+        return paste;
+    }
+
+    private LocalDateTime convertToLocalDateTime(PasteExpiration expiration) {
+        LocalDateTime offsetDateTime = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
+        return offsetDateTime.plusMinutes(expiration.getOffsetMin());
     }
 }
