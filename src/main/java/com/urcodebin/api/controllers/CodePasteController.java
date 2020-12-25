@@ -1,7 +1,9 @@
 package com.urcodebin.api.controllers;
 
+import com.urcodebin.api.controllers.requestbody.PasteRequestBody;
 import com.urcodebin.api.entities.CodePaste;
 import com.urcodebin.api.enums.PasteSyntax;
+import com.urcodebin.api.error.exception.MissingRequiredSourceCodeException;
 import com.urcodebin.api.error.exception.PasteNotFoundException;
 import com.urcodebin.api.services.interfaces.CodePasteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,20 +20,25 @@ public class CodePasteController {
 
     private final CodePasteService codePasteService;
 
+    private static final int MAX_TITLE_LENGTH = 50;
+    private static final int MIN_TITLE_LENGTH = 1;
+    private static final int MAX_SEARCH_LIMIT = 20;
+    private static final int MIN_SEARCH_LIMIT = 1;
+
     @Autowired
     public CodePasteController(@Qualifier("PasteService") CodePasteService codePasteService) {
         this.codePasteService = codePasteService;
     }
 
-    @GetMapping(path = "/{pasteId}")
-    public CodePaste getCodePasteFromId(@PathVariable("pasteId") String pasteId) {
+    @GetMapping(path = "/{paste_id}")
+    public CodePaste getCodePasteFromId(@PathVariable("paste_id") String pasteId) {
         UUID pasteUUID = createUUIDFromString(pasteId);
         Optional<CodePaste> foundPasteId = codePasteService.findByCodePasteId(pasteUUID);
         return foundPasteId.orElseThrow(() -> new PasteNotFoundException("No CodePaste has been found with the given id."));
     }
 
-    @DeleteMapping(path = "/{pasteId}")
-    public void deleteCodePasteWithId(@PathVariable("pasteId") String pasteId) {
+    @DeleteMapping(path = "/{paste_id}")
+    public void deleteCodePasteWithId(@PathVariable("paste_id") String pasteId) {
         UUID pasteUUID = createUUIDFromString(pasteId);
         if(!codePasteService.doesCodePasteWithIdExist(pasteUUID))
             throw new PasteNotFoundException("No CodePaste has been found with the given id.");
@@ -44,7 +51,7 @@ public class CodePasteController {
                 @RequestParam(value = "paste_title", defaultValue = "") String pasteTitle,
                 @RequestParam(value = "paste_syntax", required = false) String pasteSyntax,
                 @RequestParam(value = "limit", defaultValue = "5") int limit) {
-        if(limit > 20 || limit < 1)
+        if(limit > MAX_SEARCH_LIMIT || limit < MIN_SEARCH_LIMIT)
             throw new IllegalArgumentException("limit number must be between 1 and 20.");
 
         if(pasteSyntax == null)
@@ -52,6 +59,20 @@ public class CodePasteController {
 
         PasteSyntax pasteSyntaxToSearch = createPasteSyntaxFromString(pasteSyntax);
         return codePasteService.findListOfCodePastesBy(pasteTitle, pasteSyntaxToSearch, limit);
+    }
+
+    @PostMapping
+    public CodePaste postNewCodePasteWith(@RequestBody PasteRequestBody pasteRequestBody) {
+        if(pasteRequestBody.getSourceCode().isEmpty())
+            throw new MissingRequiredSourceCodeException("Required field (source_code) is missing.");
+
+        int titleLength = pasteRequestBody.getPasteTitle().length();
+        if(titleLength > MAX_TITLE_LENGTH || titleLength < MIN_TITLE_LENGTH) {
+            String errorMsg = String.format("Paste Title field length must be within %s and %s",
+                                                MIN_TITLE_LENGTH, MAX_TITLE_LENGTH);
+            throw new IllegalArgumentException(errorMsg);
+        }
+        return codePasteService.createNewCodePaste(pasteRequestBody);
     }
 
     private UUID createUUIDFromString(String stringId) {
