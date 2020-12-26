@@ -1,6 +1,6 @@
 package com.urcodebin.api.services.interfaces;
 
-import com.urcodebin.api.controllers.requestbody.PasteRequestBody;
+import com.urcodebin.api.controllers.requestbody.UploadPasteRequestBody;
 import com.urcodebin.api.entities.CodePaste;
 import com.urcodebin.api.enums.PasteSyntax;
 
@@ -16,7 +16,7 @@ public interface CodePasteService {
 
     List<CodePaste> findListOfCodePastesBy(String pasteTitle, int limit);
 
-    CodePaste createNewCodePaste(PasteRequestBody requestBody);
+    CodePaste createNewCodePaste(UploadPasteRequestBody requestBody);
 
     void deleteCodePasteById(UUID pasteUUID);
 

@@ -1,6 +1,6 @@
 package com.urcodebin.api.services;
 
-import com.urcodebin.api.controllers.requestbody.PasteRequestBody;
+import com.urcodebin.api.controllers.requestbody.UploadPasteRequestBody;
 import com.urcodebin.api.entities.CodePaste;
 import com.urcodebin.api.enums.PasteExpiration;
 import com.urcodebin.api.enums.PasteSyntax;
@@ -54,7 +54,7 @@ public class CodePasteServiceImpl implements CodePasteService {
     }
 
     @Override
-    public CodePaste createNewCodePaste(PasteRequestBody requestBody) {
+    public CodePaste createNewCodePaste(UploadPasteRequestBody requestBody) {
         CodePaste pasteToCreate = generateCodePasteFrom(requestBody);
         LOGGER.info("Saving new Code Paste with ID: {},", pasteToCreate.getPasteId());
         return codePasteRepository.save(pasteToCreate);
@@ -72,7 +72,7 @@ public class CodePasteServiceImpl implements CodePasteService {
         return codePasteRepository.existsById(id);
     }
 
-    private CodePaste generateCodePasteFrom(PasteRequestBody requestBody) {
+    private CodePaste generateCodePasteFrom(UploadPasteRequestBody requestBody) {
         CodePaste paste = new CodePaste();
         paste.setSourceCode(requestBody.getSourceCode());
         paste.setPasteVisibility(requestBody.getPasteVisibility());

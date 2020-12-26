@@ -1,6 +1,6 @@
 package com.urcodebin.api.controllers;
 
-import com.urcodebin.api.controllers.requestbody.PasteRequestBody;
+import com.urcodebin.api.controllers.requestbody.UploadPasteRequestBody;
 import com.urcodebin.api.dto.CodePasteDTO;
 import com.urcodebin.api.entities.CodePaste;
 import com.urcodebin.api.enums.PasteSyntax;
@@ -76,7 +76,7 @@ public class CodePasteController {
     }
 
     @PostMapping
-    public CodePasteDTO postNewCodePasteWith(@RequestBody PasteRequestBody pasteRequestBody) {
+    public CodePasteDTO postNewCodePasteWith(@RequestBody UploadPasteRequestBody pasteRequestBody) {
         if(pasteRequestBody.getSourceCode().isEmpty())
             throw new MissingRequiredSourceCodeException("Required field (source_code) is missing.");
 
