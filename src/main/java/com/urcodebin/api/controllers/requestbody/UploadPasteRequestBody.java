@@ -13,7 +13,7 @@ import com.urcodebin.api.enums.PasteVisibility;
  * then be passed to other services to be used. This is a data
  * transfer object and not meant to be mutated.
  */
-public class PasteRequestBody {
+public class UploadPasteRequestBody {
 
     @JsonProperty(value = "paste_title")
     @JsonSetter(nulls = Nulls.SKIP)
@@ -38,7 +38,7 @@ public class PasteRequestBody {
      * Constructor starts out using the default values for each request body
      * and then Jackson will set non-null values to each, if possible.
      */
-    public PasteRequestBody() {
+    public UploadPasteRequestBody() {
         this.pasteTitle = "Untitled Paste";
         this.pasteSyntax = PasteSyntax.NONE;
         this.pasteVisibility = PasteVisibility.PRIVATE;

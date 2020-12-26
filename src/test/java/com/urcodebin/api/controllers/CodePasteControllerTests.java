@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.jayway.jsonpath.JsonPath;
+import com.urcodebin.api.dto.CodePasteDTO;
 import com.urcodebin.api.entities.CodePaste;
 import com.urcodebin.api.enums.PasteSyntax;
 import com.urcodebin.api.enums.PasteVisibility;
@@ -14,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -47,8 +49,12 @@ public class CodePasteControllerTests {
     @Autowired
     public WebApplicationContext webApplicationContext;
 
+    private final ModelMapper modelMapper = new ModelMapper();
+
     CodePaste firstPaste = new CodePaste();
+    CodePasteDTO firstPasteDTO;
     CodePaste secondPaste = new CodePaste();
+    CodePasteDTO secondPasteDTO;
 
     private final String PUBLIC_PASTE_PATH = "/api/paste/public";
     private final String PASTE_FROM_ID_PATH = "/api/paste/{pasteId}";
@@ -58,7 +64,6 @@ public class CodePasteControllerTests {
 
     @Before
     public void setup() {
-        Mockito.reset(codePasteService);
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
         firstPaste.setPasteVisibility(PasteVisibility.PUBLIC);
@@ -66,12 +71,18 @@ public class CodePasteControllerTests {
         firstPaste.setPasteTitle("My Fake Paste");
         firstPaste.setSourceCode("System.out.println('this is code);");
         firstPaste.setPasteExpirationDate(LocalDateTime.now());
+        firstPasteDTO = convertToDTO(firstPaste);
 
         secondPaste.setPasteVisibility(PasteVisibility.PUBLIC);
         secondPaste.setPasteSyntax(PasteSyntax.JAVA);
         secondPaste.setPasteTitle("My Java Program");
         secondPaste.setSourceCode("Object myObj = new Object();");
         secondPaste.setPasteExpirationDate(LocalDateTime.now());
+        secondPasteDTO = convertToDTO(secondPaste);
+    }
+
+    private CodePasteDTO convertToDTO(CodePaste codePaste) {
+        return modelMapper.map(codePaste, CodePasteDTO.class);
     }
 
     @Test
@@ -80,7 +91,7 @@ public class CodePasteControllerTests {
 
         mockMvc.perform(get(PASTE_FROM_ID_PATH, firstPaste.getPasteId().toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath(".*", is(convertPasteToList(firstPaste))));
+                .andExpect(jsonPath(".*", is(convertPasteToList(firstPasteDTO))));
 
         verify(codePasteService, times(1)).findByCodePasteId(any(UUID.class));
     }
@@ -152,8 +163,8 @@ public class CodePasteControllerTests {
 
         mockMvc.perform(request)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].*", is(convertPasteToList(firstPaste))))
-                .andExpect(jsonPath("$[1].*", is(convertPasteToList(secondPaste))));
+                .andExpect(jsonPath("$[0].*", is(convertPasteToList(firstPasteDTO))))
+                .andExpect(jsonPath("$[1].*", is(convertPasteToList(secondPasteDTO))));
 
         verify(codePasteService, times(0)).findListOfCodePastesBy(anyString(), anyInt());
     }
@@ -186,8 +197,8 @@ public class CodePasteControllerTests {
 
         mockMvc.perform(request)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].*", is(convertPasteToList(firstPaste))))
-                .andExpect(jsonPath("$[1].*", is(convertPasteToList(secondPaste))));
+                .andExpect(jsonPath("$[0].*", is(convertPasteToList(firstPasteDTO))))
+                .andExpect(jsonPath("$[1].*", is(convertPasteToList(secondPasteDTO))));
 
         verify(codePasteService, times(0)).findListOfCodePastesBy(anyString(), anyInt());
     }
@@ -203,8 +214,8 @@ public class CodePasteControllerTests {
 
         mockMvc.perform(request)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].*", is(convertPasteToList(firstPaste))))
-                .andExpect(jsonPath("$[1].*", is(convertPasteToList(secondPaste))));
+                .andExpect(jsonPath("$[0].*", is(convertPasteToList(convertToDTO(firstPaste)))))
+                .andExpect(jsonPath("$[1].*", is(convertPasteToList(secondPasteDTO))));
 
         verify(codePasteService, times(0))
                 .findListOfCodePastesBy(anyString(), any(PasteSyntax.class), anyInt());
@@ -237,8 +248,8 @@ public class CodePasteControllerTests {
 
         mockMvc.perform(request)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].*", is(convertPasteToList(firstPaste))))
-                .andExpect(jsonPath("$[1].*", is(convertPasteToList(secondPaste))));
+                .andExpect(jsonPath("$[0].*", is(convertPasteToList(firstPasteDTO))))
+                .andExpect(jsonPath("$[1].*", is(convertPasteToList(secondPasteDTO))));
 
         verify(codePasteService, times(0))
                 .findListOfCodePastesBy(anyString(), anyInt());
@@ -267,7 +278,7 @@ public class CodePasteControllerTests {
                 .findListOfCodePastesBy(anyString(), anyInt());
     }
 
-    private List<Object> convertPasteToList(CodePaste codePastes) {
+    private List<Object> convertPasteToList(CodePasteDTO codePastes) {
         ObjectWriter writer = new ObjectMapper().writer();
         JSONArray jsonArray;
         try {

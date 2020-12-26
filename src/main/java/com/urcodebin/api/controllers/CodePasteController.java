@@ -1,11 +1,13 @@
 package com.urcodebin.api.controllers;
 
-import com.urcodebin.api.controllers.requestbody.PasteRequestBody;
+import com.urcodebin.api.controllers.requestbody.UploadPasteRequestBody;
+import com.urcodebin.api.dto.CodePasteDTO;
 import com.urcodebin.api.entities.CodePaste;
 import com.urcodebin.api.enums.PasteSyntax;
 import com.urcodebin.api.error.exception.MissingRequiredSourceCodeException;
 import com.urcodebin.api.error.exception.PasteNotFoundException;
 import com.urcodebin.api.services.interfaces.CodePasteService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/paste")
@@ -20,21 +23,27 @@ public class CodePasteController {
 
     private final CodePasteService codePasteService;
 
+    private final ModelMapper modelMapper;
+
     private static final int MAX_TITLE_LENGTH = 50;
     private static final int MIN_TITLE_LENGTH = 1;
     private static final int MAX_SEARCH_LIMIT = 20;
     private static final int MIN_SEARCH_LIMIT = 1;
 
     @Autowired
-    public CodePasteController(@Qualifier("PasteService") CodePasteService codePasteService) {
+    public CodePasteController(@Qualifier("PasteService") CodePasteService codePasteService,
+                               ModelMapper modelMapper) {
         this.codePasteService = codePasteService;
+        this.modelMapper = modelMapper;
     }
 
     @GetMapping(path = "/{paste_id}")
-    public CodePaste getCodePasteFromId(@PathVariable("paste_id") String pasteId) {
+    public CodePasteDTO getCodePasteFromId(@PathVariable("paste_id") String pasteId) {
         UUID pasteUUID = createUUIDFromString(pasteId);
         Optional<CodePaste> foundPasteId = codePasteService.findByCodePasteId(pasteUUID);
-        return foundPasteId.orElseThrow(() -> new PasteNotFoundException("No CodePaste has been found with the given id."));
+        final CodePaste codePaste = foundPasteId.orElseThrow(() ->
+                            new PasteNotFoundException("No CodePaste has been found with the given id."));
+        return convertToDTO(codePaste);
     }
 
     @DeleteMapping(path = "/{paste_id}")
@@ -47,22 +56,27 @@ public class CodePasteController {
     }
 
     @GetMapping(path = "/public")
-    public List<CodePaste> getListOfPublicPastesWith(
+    public List<CodePasteDTO> getListOfPublicPastesWith(
                 @RequestParam(value = "paste_title", defaultValue = "") String pasteTitle,
                 @RequestParam(value = "paste_syntax", required = false) String pasteSyntax,
                 @RequestParam(value = "limit", defaultValue = "5") int limit) {
         if(limit > MAX_SEARCH_LIMIT || limit < MIN_SEARCH_LIMIT)
             throw new IllegalArgumentException("limit number must be between 1 and 20.");
 
-        if(pasteSyntax == null)
-            return codePasteService.findListOfCodePastesBy(pasteTitle, limit);
-
-        PasteSyntax pasteSyntaxToSearch = createPasteSyntaxFromString(pasteSyntax);
-        return codePasteService.findListOfCodePastesBy(pasteTitle, pasteSyntaxToSearch, limit);
+        List<CodePaste> listOfPastes;
+        if(pasteSyntax == null) {
+            listOfPastes = codePasteService.findListOfCodePastesBy(pasteTitle, limit);
+        } else {
+            PasteSyntax pasteSyntaxToSearch = createPasteSyntaxFromString(pasteSyntax);
+            listOfPastes = codePasteService.findListOfCodePastesBy(pasteTitle, pasteSyntaxToSearch, limit);
+        }
+        return listOfPastes.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     @PostMapping
-    public CodePaste postNewCodePasteWith(@RequestBody PasteRequestBody pasteRequestBody) {
+    public CodePasteDTO postNewCodePasteWith(@RequestBody UploadPasteRequestBody pasteRequestBody) {
         if(pasteRequestBody.getSourceCode().isEmpty())
             throw new MissingRequiredSourceCodeException("Required field (source_code) is missing.");
 
@@ -72,7 +86,13 @@ public class CodePasteController {
                                                 MIN_TITLE_LENGTH, MAX_TITLE_LENGTH);
             throw new IllegalArgumentException(errorMsg);
         }
-        return codePasteService.createNewCodePaste(pasteRequestBody);
+
+        final CodePaste newCodePaste = codePasteService.createNewCodePaste(pasteRequestBody);
+        return convertToDTO(newCodePaste);
+    }
+
+    private CodePasteDTO convertToDTO(CodePaste codePaste) {
+        return modelMapper.map(codePaste, CodePasteDTO.class);
     }
 
     private UUID createUUIDFromString(String stringId) {
