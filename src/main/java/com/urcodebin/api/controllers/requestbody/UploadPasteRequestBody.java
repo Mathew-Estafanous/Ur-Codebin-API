@@ -8,31 +8,30 @@ import com.urcodebin.api.enums.PasteSyntax;
 import com.urcodebin.api.enums.PasteVisibility;
 
 /**
- * Object that is used when handling with CodePaste Request body.
- * Largely used with writing the JSON body to an object that can
- * then be passed to other services to be used. This is a data
- * transfer object and not meant to be mutated.
+ * Object that is used when handling in the POST request to
+ * upload a new Code Paste. JSON request body is mapped to this
+ * object to be further used.
  */
 public class UploadPasteRequestBody {
 
     @JsonProperty(value = "paste_title")
     @JsonSetter(nulls = Nulls.SKIP)
-    private final String pasteTitle;
+    private String pasteTitle;
 
     @JsonProperty(value = "paste_syntax")
     @JsonSetter(nulls = Nulls.SKIP)
-    private final PasteSyntax pasteSyntax;
+    private PasteSyntax pasteSyntax;
 
     @JsonProperty(value = "paste_visibility")
     @JsonSetter(nulls = Nulls.SKIP)
-    private final PasteVisibility pasteVisibility;
+    private PasteVisibility pasteVisibility;
 
     @JsonProperty(value = "paste_expiration")
     @JsonSetter(nulls = Nulls.SKIP)
-    private final PasteExpiration pasteExpiration;
+    private PasteExpiration pasteExpiration;
 
     @JsonProperty(value = "source_code")
-    private final String sourceCode;
+    private String sourceCode;
 
     /*
      * Constructor starts out using the default values for each request body
@@ -44,6 +43,26 @@ public class UploadPasteRequestBody {
         this.pasteVisibility = PasteVisibility.PRIVATE;
         this.pasteExpiration = PasteExpiration.ONEHOUR;
         this.sourceCode = "";
+    }
+
+    public void setPasteTitle(String pasteTitle) {
+        this.pasteTitle = pasteTitle;
+    }
+
+    public void setPasteSyntax(PasteSyntax pasteSyntax) {
+        this.pasteSyntax = pasteSyntax;
+    }
+
+    public void setPasteVisibility(PasteVisibility pasteVisibility) {
+        this.pasteVisibility = pasteVisibility;
+    }
+
+    public void setPasteExpiration(PasteExpiration pasteExpiration) {
+        this.pasteExpiration = pasteExpiration;
+    }
+
+    public void setSourceCode(String sourceCode) {
+        this.sourceCode = sourceCode;
     }
 
     public String getPasteTitle() {

@@ -1,6 +1,8 @@
 package com.urcodebin.api.services;
 
+import com.urcodebin.api.controllers.requestbody.UploadPasteRequestBody;
 import com.urcodebin.api.entities.CodePaste;
+import com.urcodebin.api.enums.PasteExpiration;
 import com.urcodebin.api.enums.PasteSyntax;
 import com.urcodebin.api.enums.PasteVisibility;
 import com.urcodebin.api.repository.CodePasteRepository;
@@ -13,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.mockito.Mockito.*;
@@ -27,6 +30,7 @@ public class CodePasteServiceTests {
     private CodePasteServiceImpl codePasteService;
 
     CodePaste fakeCodePaste;
+    UploadPasteRequestBody pasteRequestBody;
 
     @Before
     public void setup() {
@@ -34,6 +38,16 @@ public class CodePasteServiceTests {
         fakeCodePaste.setPasteTitle("Fake Title");
         fakeCodePaste.setPasteSyntax(PasteSyntax.NONE);
         fakeCodePaste.setPasteVisibility(PasteVisibility.PUBLIC);
+        fakeCodePaste.setPasteExpirationDate(LocalDateTime.now()
+                        .plusMinutes(PasteExpiration.THIRTYMINUTES.getOffsetMin()));
+        fakeCodePaste.setSourceCode("SOURCE CODE");
+
+        pasteRequestBody = new UploadPasteRequestBody();
+        pasteRequestBody.setPasteSyntax(PasteSyntax.NONE);
+        pasteRequestBody.setPasteExpiration(PasteExpiration.TENMINUTES);
+        pasteRequestBody.setPasteTitle("Fake Title");
+        pasteRequestBody.setPasteVisibility(PasteVisibility.PUBLIC);
+        pasteRequestBody.setSourceCode("SOURCE CODE");
     }
 
     @Test
@@ -123,5 +137,25 @@ public class CodePasteServiceTests {
         codePasteService.deleteCodePasteById(UUID.randomUUID());
 
         verify(codePasteRepository, times(1)).deleteById(any(UUID.class));
+    }
+
+    @Test
+    public void createNewCodePasteWithValidRequestBodyCorrectlyReturnsCodePaste() {
+        when(codePasteRepository.save(any(CodePaste.class))).thenReturn(fakeCodePaste);
+
+        final CodePaste codePaste = codePasteService.createNewCodePaste(pasteRequestBody);
+        Assert.assertEquals(codePaste.getPasteExpirationDate(), fakeCodePaste.getPasteExpirationDate());
+        Assert.assertEquals(codePaste.getPasteSyntax(), fakeCodePaste.getPasteSyntax());
+        Assert.assertEquals(codePaste.getPasteTitle(), fakeCodePaste.getPasteTitle());
+        Assert.assertEquals(codePaste.getSourceCode(), fakeCodePaste.getSourceCode());
+        Assert.assertEquals(codePaste.getPasteVisibility(), fakeCodePaste.getPasteVisibility());
+    }
+
+    @Test
+    public void createNewCodePasteWithValidRequestBodyCallsRepositorySaveOnce() {
+        when(codePasteRepository.save(any(CodePaste.class))).thenReturn(fakeCodePaste);
+
+        codePasteService.createNewCodePaste(pasteRequestBody);
+        verify(codePasteRepository, times(1)).save(any(CodePaste.class));
     }
 }

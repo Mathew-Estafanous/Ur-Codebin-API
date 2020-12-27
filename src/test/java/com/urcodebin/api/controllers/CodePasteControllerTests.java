@@ -4,28 +4,32 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.jayway.jsonpath.JsonPath;
+import com.urcodebin.api.controllers.requestbody.UploadPasteRequestBody;
 import com.urcodebin.api.dto.CodePasteDTO;
 import com.urcodebin.api.entities.CodePaste;
+import com.urcodebin.api.enums.PasteExpiration;
 import com.urcodebin.api.enums.PasteSyntax;
 import com.urcodebin.api.enums.PasteVisibility;
 import com.urcodebin.api.services.interfaces.CodePasteService;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -56,10 +60,19 @@ public class CodePasteControllerTests {
     CodePaste secondPaste = new CodePaste();
     CodePasteDTO secondPasteDTO;
 
-    private final String PUBLIC_PASTE_PATH = "/api/paste/public";
-    private final String PASTE_FROM_ID_PATH = "/api/paste/{pasteId}";
-    private final String PASTE_TITLE = "paste_title";
-    private final String PASTE_SYNTAX = "paste_syntax";
+    private static final String PUBLIC_PASTE_PATH = "/api/paste/public";
+    private static final String PASTE_FROM_ID_PATH = "/api/paste/{pasteId}";
+    private static final String POST_NEW_PASTE_PATH = "/api/paste";
+
+    private static final String PASTE_TITLE = "paste_title";
+    private static final String PASTE_VISIBILITY = "paste_visibility";
+    private static final String PASTE_EXPIRATION = "paste_expiration";
+    private static final String PASTE_SYNTAX = "paste_syntax";
+    private static final String SOURCE_CODE = "source_code";
+
+    public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(MediaType.APPLICATION_JSON.getType(),
+            MediaType.APPLICATION_JSON.getSubtype(), StandardCharsets.UTF_8);
+
     private final String LIMIT = "limit";
 
     @Before
@@ -70,19 +83,23 @@ public class CodePasteControllerTests {
         firstPaste.setPasteSyntax(PasteSyntax.JAVA);
         firstPaste.setPasteTitle("My Fake Paste");
         firstPaste.setSourceCode("System.out.println('this is code);");
-        firstPaste.setPasteExpirationDate(LocalDateTime.now());
+        firstPaste.setPasteExpirationDate(pasteExpirationToDateTime(PasteExpiration.TENMINUTES));
         firstPasteDTO = convertToDTO(firstPaste);
 
         secondPaste.setPasteVisibility(PasteVisibility.PUBLIC);
         secondPaste.setPasteSyntax(PasteSyntax.JAVA);
         secondPaste.setPasteTitle("My Java Program");
         secondPaste.setSourceCode("Object myObj = new Object();");
-        secondPaste.setPasteExpirationDate(LocalDateTime.now());
+        secondPaste.setPasteExpirationDate(pasteExpirationToDateTime(PasteExpiration.ONEHOUR));
         secondPasteDTO = convertToDTO(secondPaste);
     }
 
     private CodePasteDTO convertToDTO(CodePaste codePaste) {
         return modelMapper.map(codePaste, CodePasteDTO.class);
+    }
+
+    private LocalDateTime pasteExpirationToDateTime(PasteExpiration expiration) {
+        return LocalDateTime.now().plusMinutes(expiration.getOffsetMin());
     }
 
     @Test
@@ -276,6 +293,28 @@ public class CodePasteControllerTests {
                 .findListOfCodePastesBy(anyString(), any(PasteSyntax.class), anyInt());
         verify(codePasteService, times(0))
                 .findListOfCodePastesBy(anyString(), anyInt());
+    }
+
+    @Test
+    public void postNewCodePasteWithCorrectFormatReturnsUploadedCodePaste() throws Exception {
+        when(codePasteService.createNewCodePaste(any(UploadPasteRequestBody.class))).thenReturn(firstPaste);
+
+        String requestBody = new JSONObject()
+                .put(PASTE_TITLE, firstPaste.getPasteTitle())
+                .put(PASTE_SYNTAX, firstPaste.getPasteSyntax().toString())
+                .put(SOURCE_CODE, firstPaste.getSourceCode())
+                .put(PASTE_VISIBILITY, firstPaste.getPasteVisibility().toString())
+                .put(PASTE_EXPIRATION, PasteExpiration.TENMINUTES.toString())
+                .toString();
+
+        final MockHttpServletRequestBuilder request = post(POST_NEW_PASTE_PATH)
+                .contentType(APPLICATION_JSON_UTF8).content(requestBody);
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(".*", is(convertPasteToList(firstPasteDTO))));
+
+        verify(codePasteService, times(1)).createNewCodePaste(any());
     }
 
     private List<Object> convertPasteToList(CodePasteDTO codePastes) {
