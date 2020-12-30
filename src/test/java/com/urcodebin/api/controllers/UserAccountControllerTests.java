@@ -51,6 +51,8 @@ public class UserAccountControllerTests {
     UserAccount fakeAccount = new UserAccount();
     UserAccountDTO fakeAccountDTO;
 
+    private final static String GET_ACCOUNT_FROM_ID_PATH = "/api/account/{accountId}";
+
     @Before
     public void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
@@ -70,9 +72,19 @@ public class UserAccountControllerTests {
     public void getUserAccountByIdWithCorrectIdReturnsRightAccount() throws Exception {
         when(userAccountService.getUserAccountById(fakeAccount.getId())).thenReturn(Optional.of(fakeAccount));
 
-        mockMvc.perform(get("/api/account/{accountId}", fakeAccount.getId()))
+        mockMvc.perform(get(GET_ACCOUNT_FROM_ID_PATH, fakeAccount.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(".*", is(convertToListFormat(fakeAccountDTO))));
+
+        verify(userAccountService, times(1)).getUserAccountById(any());
+    }
+
+    @Test
+    public void getUserAccountByIdWithWrongIdReturnsHttpNotFound() throws Exception {
+        when(userAccountService.getUserAccountById(any())).thenReturn(Optional.empty());
+
+        mockMvc.perform(get(GET_ACCOUNT_FROM_ID_PATH, 1001))
+                .andExpect(status().isNotFound());
 
         verify(userAccountService, times(1)).getUserAccountById(any());
     }
