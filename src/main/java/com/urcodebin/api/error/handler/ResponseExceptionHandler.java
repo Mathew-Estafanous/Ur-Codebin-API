@@ -1,5 +1,6 @@
 package com.urcodebin.api.error.handler;
 
+import com.urcodebin.api.error.exception.AccountInformationTakenException;
 import com.urcodebin.api.error.exception.MissingRequiredSourceCodeException;
 import com.urcodebin.api.error.exception.PasteNotFoundException;
 import com.urcodebin.api.error.exception.UserAccountNotFoundException;
@@ -25,6 +26,11 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(value = { PasteNotFoundException.class, UserAccountNotFoundException.class })
     public ResponseEntity<Object> handleNotFound(final RuntimeException exception, final WebRequest request) {
         return baseExceptionHandler(exception, request, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = {AccountInformationTakenException.class })
+    public ResponseEntity<Object> handleConflict(final RuntimeException exception, final WebRequest request) {
+        return baseExceptionHandler(exception, request, HttpStatus.CONFLICT);
     }
 
     @Override

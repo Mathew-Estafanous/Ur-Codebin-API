@@ -1,16 +1,15 @@
 package com.urcodebin.api.controllers;
 
+import com.urcodebin.api.controllers.requestbody.SignupRequestBody;
 import com.urcodebin.api.dto.UserAccountDTO;
 import com.urcodebin.api.entities.UserAccount;
+import com.urcodebin.api.error.exception.AccountInformationTakenException;
 import com.urcodebin.api.error.exception.UserAccountNotFoundException;
 import com.urcodebin.api.services.interfaces.UserAccountService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
@@ -35,6 +34,12 @@ public class UserAccountController {
         if(!foundUserAccount.isPresent())
             throw new UserAccountNotFoundException("User Account with given id was not found.");
         return convertToDTO(foundUserAccount.get());
+    }
+
+    @PostMapping("/signup")
+    public UserAccountDTO signupForNewAccount(@RequestBody SignupRequestBody signupAccount) {
+        final UserAccount signedUpAccount = userAccountService.signupNewUserAccount(signupAccount);
+        return convertToDTO(signedUpAccount);
     }
 
     private UserAccountDTO convertToDTO(UserAccount userAccount) {
