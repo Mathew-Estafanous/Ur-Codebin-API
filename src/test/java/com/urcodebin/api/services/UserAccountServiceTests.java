@@ -2,7 +2,6 @@ package com.urcodebin.api.services;
 
 import com.urcodebin.api.controllers.requestbody.SignupRequestBody;
 import com.urcodebin.api.entities.UserAccount;
-import com.urcodebin.api.error.exception.AccountInformationTakenException;
 import com.urcodebin.api.error.exception.UserAccountNotFoundException;
 import com.urcodebin.api.repository.UserAccountRepository;
 import org.junit.Assert;
@@ -51,15 +50,17 @@ public class UserAccountServiceTests {
     public void getUserAccountByIdWithCorrectIdReturnsRightUserAccount() {
         when(userAccountRepository.findById(testAccount.getId())).thenReturn(Optional.of(testAccount));
 
-        final UserAccount foundUserAccount = userAccountService.getUserAccountById(testAccount.getId());
-        Assert.assertEquals(foundUserAccount, testAccount);
+        final Optional<UserAccount> foundUserAccount = userAccountService.getUserAccountById(testAccount.getId());
+        Assert.assertTrue(foundUserAccount.isPresent());
+        Assert.assertEquals(foundUserAccount.get(), testAccount);
     }
 
-    @Test(expected = UserAccountNotFoundException.class)
-    public void getUserAccountByIdWithWrongIdThrowsUserAccountNotFoundException() {
+    @Test
+    public void getUserAccountByIdWithWrongIdReturnsEmptyOptional() {
         when(userAccountRepository.findById(100L)).thenReturn(Optional.empty());
 
-        final UserAccount foundUserAccount = userAccountService.getUserAccountById(100L);
+        final Optional<UserAccount> foundUserAccount = userAccountService.getUserAccountById(100L);
+        Assert.assertFalse(foundUserAccount.isPresent());
     }
 
     @Test
@@ -72,19 +73,5 @@ public class UserAccountServiceTests {
         Assert.assertEquals(userAccount.getUsername(), signupRequestBody.getUsername());
         //Confirm that the password has been encoded and is not the same plain password.
         Assert.assertNotEquals(userAccount.getPassword(), signupRequestBody.getPassword());
-    }
-
-    @Test(expected = AccountInformationTakenException.class)
-    public void signupNewUserAccountWithTakenUsernameThrowsAccountInformationTakenException() {
-        when(userAccountRepository.existsByUsername(signupRequestBody.getUsername())).thenReturn(true);
-
-        userAccountService.signupNewUserAccount(signupRequestBody);
-    }
-
-    @Test(expected = AccountInformationTakenException.class)
-    public void signupNewUserAccountWithTakenEmailThrowsAccountInformationTakenException() {
-        when(userAccountRepository.existsByEmail(signupRequestBody.getEmail())).thenReturn(true);
-
-        userAccountService.signupNewUserAccount(signupRequestBody);
     }
 }

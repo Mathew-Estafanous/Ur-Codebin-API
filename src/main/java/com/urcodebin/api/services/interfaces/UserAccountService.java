@@ -3,9 +3,11 @@ package com.urcodebin.api.services.interfaces;
 import com.urcodebin.api.controllers.requestbody.SignupRequestBody;
 import com.urcodebin.api.entities.UserAccount;
 
+import java.util.Optional;
+
 public interface UserAccountService {
 
-    UserAccount getUserAccountById(Long accountId);
+    Optional<UserAccount> getUserAccountById(Long accountId);
 
     UserAccount signupNewUserAccount(SignupRequestBody signupAccount);
 

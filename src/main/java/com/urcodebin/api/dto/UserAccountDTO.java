@@ -7,10 +7,10 @@ public class UserAccountDTO {
     @JsonProperty("account_id")
     private Long id;
 
-    @JsonProperty("username")
+    @JsonProperty("account_username")
     private String username;
 
-    @JsonProperty("email")
+    @JsonProperty("account_email")
     private String email;
 
     public Long getId() {

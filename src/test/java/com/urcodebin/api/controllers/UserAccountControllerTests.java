@@ -30,6 +30,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -82,7 +83,7 @@ public class UserAccountControllerTests {
 
     @Test
     public void getUserAccountByIdWithCorrectIdReturnsRightAccount() throws Exception {
-        when(userAccountService.getUserAccountById(fakeAccount.getId())).thenReturn(fakeAccount);
+        when(userAccountService.getUserAccountById(fakeAccount.getId())).thenReturn(Optional.of(fakeAccount));
 
         mockMvc.perform(get(GET_ACCOUNT_FROM_ID_PATH, fakeAccount.getId()))
                 .andExpect(status().isOk())
@@ -116,6 +117,38 @@ public class UserAccountControllerTests {
         mockMvc.perform(request)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(".*", is(convertToListFormat(fakeAccountDTO))));
+    }
+
+    @Test
+    public void signupForNewAccountWithTakenUsernameResultsInHttpConflict() throws Exception {
+        when(userAccountService.isAccountUsernameTaken("Taken Username")).thenReturn(true);
+
+        String requestBody = new JSONObject()
+                .put(ACCOUNT_USERNAME, "Taken Username")
+                .put(ACCOUNT_PASSWORD, "Password")
+                .put(ACCOUNT_EMAIL, "email@fake.com").toString();
+
+        final MockHttpServletRequestBuilder request = post(SIGNUP_ACCOUNT_PATH)
+                .contentType(APPLICATION_JSON_UTF8).content(requestBody);
+
+        mockMvc.perform(request)
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    public void signupForNewAccountWithTakenEmailResultsInHttpConflict() throws Exception {
+        when(userAccountService.isAccountEmailTaken("Taken@email.com")).thenReturn(true);
+
+        String requestBody = new JSONObject()
+                .put(ACCOUNT_USERNAME, "Username")
+                .put(ACCOUNT_PASSWORD, "Password")
+                .put(ACCOUNT_EMAIL, "Taken@email.com").toString();
+
+        final MockHttpServletRequestBuilder request = post(SIGNUP_ACCOUNT_PATH)
+                .contentType(APPLICATION_JSON_UTF8).content(requestBody);
+
+        mockMvc.perform(request)
+                .andExpect(status().isConflict());
     }
 
     private List<Object> convertToListFormat(UserAccountDTO codePastes) {

@@ -29,21 +29,15 @@ public class UserAccountServiceImpl implements UserAccountService {
     }
 
     @Override
-    public UserAccount getUserAccountById(Long accountId) {
+    public Optional<UserAccount> getUserAccountById(Long accountId) {
         LOGGER.info("Finding UserAccount with ID: {}", accountId);
         final Optional<UserAccount> foundAccount = userAccountRepository.findById(accountId);
-        return foundAccount.orElseThrow(() -> {
-            throw new UserAccountNotFoundException("User Account with given id was not found.");
-        });
+        return foundAccount.or(Optional::empty);
     }
 
     @Override
     public UserAccount signupNewUserAccount(SignupRequestBody signupAccount) {
         LOGGER.info("Signing up new account.");
-        if(isAccountUsernameTaken(signupAccount.getUsername()))
-            throw new AccountInformationTakenException("Username provided is already in use. Please use another username.");
-        if(isAccountEmailTaken(signupAccount.getEmail()))
-            throw new AccountInformationTakenException("Email provided is already in use. Please use another email.");
         UserAccount createdAccount = createUserAccountFromSignupBody(signupAccount);
         return userAccountRepository.save(createdAccount);
     }
