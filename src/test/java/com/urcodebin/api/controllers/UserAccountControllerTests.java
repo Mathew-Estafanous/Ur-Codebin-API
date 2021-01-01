@@ -4,12 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.jayway.jsonpath.JsonPath;
+import com.urcodebin.api.controllers.requestbody.SignupRequestBody;
 import com.urcodebin.api.dto.UserAccountDTO;
 import com.urcodebin.api.entities.UserAccount;
 import com.urcodebin.api.error.exception.UserAccountNotFoundException;
 import com.urcodebin.api.services.interfaces.UserAccountService;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,14 +20,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -53,6 +57,14 @@ public class UserAccountControllerTests {
     UserAccountDTO fakeAccountDTO;
 
     private final static String GET_ACCOUNT_FROM_ID_PATH = "/api/account/{accountId}";
+    private final static String SIGNUP_ACCOUNT_PATH = "/api/account/signup";
+
+    private final static String ACCOUNT_USERNAME = "account_username";
+    private final static String ACCOUNT_EMAIL = "account_email";
+    private final static String ACCOUNT_PASSWORD = "account_password";
+
+    private static final MediaType APPLICATION_JSON_UTF8 = new MediaType(MediaType.APPLICATION_JSON.getType(),
+            MediaType.APPLICATION_JSON.getSubtype(), StandardCharsets.UTF_8);
 
     @Before
     public void setUp() {
@@ -62,7 +74,6 @@ public class UserAccountControllerTests {
         fakeAccount.setUsername("Fake Account");
         fakeAccount.setEmail("fakeEmail@gmail.com");
         fakeAccountDTO = convertToDTO(fakeAccount);
-
     }
 
     private UserAccountDTO convertToDTO(UserAccount userAccount) {
@@ -88,6 +99,23 @@ public class UserAccountControllerTests {
                 .andExpect(status().isNotFound());
 
         verify(userAccountService, times(1)).getUserAccountById(any());
+    }
+
+    @Test
+    public void signupForNewAccountWithValidRequestBodyReturnsCreatedAccount() throws Exception {
+        when(userAccountService.signupNewUserAccount(any(SignupRequestBody.class))).thenReturn(fakeAccount);
+
+        String requestBody = new JSONObject()
+                .put(ACCOUNT_USERNAME, fakeAccount.getUsername())
+                .put(ACCOUNT_PASSWORD, fakeAccount.getPassword())
+                .put(ACCOUNT_EMAIL, fakeAccount.getEmail()).toString();
+
+        final MockHttpServletRequestBuilder request = post(SIGNUP_ACCOUNT_PATH)
+                .contentType(APPLICATION_JSON_UTF8).content(requestBody);
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(".*", is(convertToListFormat(fakeAccountDTO))));
     }
 
     private List<Object> convertToListFormat(UserAccountDTO codePastes) {
