@@ -1,7 +1,9 @@
 package com.urcodebin.api.error.handler;
 
+import com.urcodebin.api.error.exception.AccountInformationTakenException;
 import com.urcodebin.api.error.exception.MissingRequiredSourceCodeException;
 import com.urcodebin.api.error.exception.PasteNotFoundException;
+import com.urcodebin.api.error.exception.UserAccountNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +23,14 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
         return baseExceptionHandler(exception, request, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(value = {PasteNotFoundException.class})
+    @ExceptionHandler(value = { PasteNotFoundException.class, UserAccountNotFoundException.class })
     public ResponseEntity<Object> handleNotFound(final RuntimeException exception, final WebRequest request) {
         return baseExceptionHandler(exception, request, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = {AccountInformationTakenException.class })
+    public ResponseEntity<Object> handleConflict(final RuntimeException exception, final WebRequest request) {
+        return baseExceptionHandler(exception, request, HttpStatus.CONFLICT);
     }
 
     @Override

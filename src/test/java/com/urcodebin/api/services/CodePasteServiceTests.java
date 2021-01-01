@@ -15,7 +15,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.Pageable;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static org.mockito.Mockito.*;
@@ -38,13 +41,14 @@ public class CodePasteServiceTests {
         fakeCodePaste.setPasteTitle("Fake Title");
         fakeCodePaste.setPasteSyntax(PasteSyntax.NONE);
         fakeCodePaste.setPasteVisibility(PasteVisibility.PUBLIC);
-        fakeCodePaste.setPasteExpirationDate(LocalDateTime.now()
-                        .plusMinutes(PasteExpiration.THIRTYMINUTES.getOffsetMin()));
         fakeCodePaste.setSourceCode("SOURCE CODE");
+        LocalDateTime offsetDateTime = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
+                .plusMinutes(PasteExpiration.THIRTYMINUTES.getOffsetMin());
+        fakeCodePaste.setPasteExpirationDate(offsetDateTime);
 
         pasteRequestBody = new UploadPasteRequestBody();
         pasteRequestBody.setPasteSyntax(PasteSyntax.NONE);
-        pasteRequestBody.setPasteExpiration(PasteExpiration.TENMINUTES);
+        pasteRequestBody.setPasteExpiration(PasteExpiration.THIRTYMINUTES);
         pasteRequestBody.setPasteTitle("Fake Title");
         pasteRequestBody.setPasteVisibility(PasteVisibility.PUBLIC);
         pasteRequestBody.setSourceCode("SOURCE CODE");
@@ -141,10 +145,13 @@ public class CodePasteServiceTests {
 
     @Test
     public void createNewCodePasteWithValidRequestBodyCorrectlyReturnsCodePaste() {
-        when(codePasteRepository.save(any(CodePaste.class))).thenReturn(fakeCodePaste);
+        when(codePasteRepository.save(any(CodePaste.class))).thenAnswer(args -> args.getArgument(0));
+
+        final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
 
         final CodePaste codePaste = codePasteService.createNewCodePaste(pasteRequestBody);
-        Assert.assertEquals(codePaste.getPasteExpirationDate(), fakeCodePaste.getPasteExpirationDate());
+        Assert.assertEquals(codePaste.getPasteExpirationDate().format(formatter),
+                fakeCodePaste.getPasteExpirationDate().format(formatter));
         Assert.assertEquals(codePaste.getPasteSyntax(), fakeCodePaste.getPasteSyntax());
         Assert.assertEquals(codePaste.getPasteTitle(), fakeCodePaste.getPasteTitle());
         Assert.assertEquals(codePaste.getSourceCode(), fakeCodePaste.getSourceCode());
