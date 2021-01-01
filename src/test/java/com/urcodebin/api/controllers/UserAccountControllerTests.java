@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.jayway.jsonpath.JsonPath;
 import com.urcodebin.api.dto.UserAccountDTO;
 import com.urcodebin.api.entities.UserAccount;
+import com.urcodebin.api.error.exception.UserAccountNotFoundException;
 import com.urcodebin.api.services.interfaces.UserAccountService;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -70,7 +71,7 @@ public class UserAccountControllerTests {
 
     @Test
     public void getUserAccountByIdWithCorrectIdReturnsRightAccount() throws Exception {
-        when(userAccountService.getUserAccountById(fakeAccount.getId())).thenReturn(Optional.of(fakeAccount));
+        when(userAccountService.getUserAccountById(fakeAccount.getId())).thenReturn(fakeAccount);
 
         mockMvc.perform(get(GET_ACCOUNT_FROM_ID_PATH, fakeAccount.getId()))
                 .andExpect(status().isOk())
@@ -81,7 +82,7 @@ public class UserAccountControllerTests {
 
     @Test
     public void getUserAccountByIdWithWrongIdReturnsHttpNotFound() throws Exception {
-        when(userAccountService.getUserAccountById(any())).thenReturn(Optional.empty());
+        when(userAccountService.getUserAccountById(any())).thenThrow(UserAccountNotFoundException.class);
 
         mockMvc.perform(get(GET_ACCOUNT_FROM_ID_PATH, 1001))
                 .andExpect(status().isNotFound());

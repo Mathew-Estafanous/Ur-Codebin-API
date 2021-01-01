@@ -3,6 +3,7 @@ package com.urcodebin.api.services;
 import com.urcodebin.api.controllers.requestbody.SignupRequestBody;
 import com.urcodebin.api.entities.UserAccount;
 import com.urcodebin.api.error.exception.AccountInformationTakenException;
+import com.urcodebin.api.error.exception.UserAccountNotFoundException;
 import com.urcodebin.api.repository.UserAccountRepository;
 import com.urcodebin.api.services.interfaces.UserAccountService;
 import org.slf4j.Logger;
@@ -28,10 +29,12 @@ public class UserAccountServiceImpl implements UserAccountService {
     }
 
     @Override
-    public Optional<UserAccount> getUserAccountById(Long accountId) {
+    public UserAccount getUserAccountById(Long accountId) {
         LOGGER.info("Finding UserAccount with ID: {}", accountId);
         final Optional<UserAccount> foundAccount = userAccountRepository.findById(accountId);
-        return foundAccount.or(Optional::empty);
+        return foundAccount.orElseThrow(() -> {
+            throw new UserAccountNotFoundException("User Account with given id was not found.");
+        });
     }
 
     @Override

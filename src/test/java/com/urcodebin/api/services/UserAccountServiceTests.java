@@ -1,6 +1,7 @@
 package com.urcodebin.api.services;
 
 import com.urcodebin.api.entities.UserAccount;
+import com.urcodebin.api.error.exception.UserAccountNotFoundException;
 import com.urcodebin.api.repository.UserAccountRepository;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,16 +38,14 @@ public class UserAccountServiceTests {
     public void getUserAccountByIdWithCorrectIdReturnsRightUserAccount() {
         when(userAccountRepository.findById(testAccount.getId())).thenReturn(Optional.of(testAccount));
 
-        final Optional<UserAccount> foundUserAccount = userAccountService.getUserAccountById(testAccount.getId());
-        Assert.assertTrue(foundUserAccount.isPresent());
-        Assert.assertEquals(foundUserAccount.get(), testAccount);
+        final UserAccount foundUserAccount = userAccountService.getUserAccountById(testAccount.getId());
+        Assert.assertEquals(foundUserAccount, testAccount);
     }
 
-    @Test
-    public void getUserAccountByIdWithWrongIdReturnsEmptyResult() {
+    @Test(expected = UserAccountNotFoundException.class)
+    public void getUserAccountByIdWithWrongIdThrowsUserAccountNotFoundException() {
         when(userAccountRepository.findById(100L)).thenReturn(Optional.empty());
 
-        final Optional<UserAccount> foundUserAccount = userAccountService.getUserAccountById(100L);
-        Assert.assertFalse(foundUserAccount.isPresent());
+        final UserAccount foundUserAccount = userAccountService.getUserAccountById(100L);
     }
 }
