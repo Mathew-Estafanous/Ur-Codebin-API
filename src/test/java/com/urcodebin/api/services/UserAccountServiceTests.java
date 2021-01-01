@@ -2,7 +2,6 @@ package com.urcodebin.api.services;
 
 import com.urcodebin.api.controllers.requestbody.SignupRequestBody;
 import com.urcodebin.api.entities.UserAccount;
-import com.urcodebin.api.error.exception.UserAccountNotFoundException;
 import com.urcodebin.api.repository.UserAccountRepository;
 import org.junit.Assert;
 import org.junit.Before;

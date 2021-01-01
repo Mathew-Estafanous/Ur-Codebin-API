@@ -2,8 +2,6 @@ package com.urcodebin.api.services;
 
 import com.urcodebin.api.controllers.requestbody.SignupRequestBody;
 import com.urcodebin.api.entities.UserAccount;
-import com.urcodebin.api.error.exception.AccountInformationTakenException;
-import com.urcodebin.api.error.exception.UserAccountNotFoundException;
 import com.urcodebin.api.repository.UserAccountRepository;
 import com.urcodebin.api.services.interfaces.UserAccountService;
 import org.slf4j.Logger;
