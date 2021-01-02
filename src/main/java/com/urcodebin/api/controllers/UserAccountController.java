@@ -57,9 +57,9 @@ public class UserAccountController {
     }
 
     private boolean validateEmailFormat(String email) {
-        String regex = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+(?:\\.[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+↵\n" +
+        String emailRegex = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+(?:\\.[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+↵\n" +
                 ")*@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$";
-        Pattern emailPattern = Pattern.compile(regex);
+        Pattern emailPattern = Pattern.compile(emailRegex);
 
         Matcher matcher = emailPattern.matcher(email);
         return matcher.matches();

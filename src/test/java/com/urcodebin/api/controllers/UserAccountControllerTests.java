@@ -151,6 +151,20 @@ public class UserAccountControllerTests {
                 .andExpect(status().isConflict());
     }
 
+    @Test
+    public void signupForNewAccountWithInvalidEmailFormatResultsInHttpBadRequest() throws Exception {
+        String requestBody = new JSONObject()
+                .put(ACCOUNT_USERNAME, "Username")
+                .put(ACCOUNT_PASSWORD, "Password")
+                .put(ACCOUNT_EMAIL, "WrongFormat@").toString();
+
+        final MockHttpServletRequestBuilder request = post(SIGNUP_ACCOUNT_PATH)
+                .contentType(APPLICATION_JSON_UTF8).content(requestBody);
+
+        mockMvc.perform(request)
+                .andExpect(status().isBadRequest());
+    }
+
     private List<Object> convertToListFormat(UserAccountDTO codePastes) {
         ObjectWriter writer = new ObjectMapper().writer();
         JSONArray jsonArray;
