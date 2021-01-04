@@ -29,8 +29,13 @@ public class UserAccountServiceImpl implements UserAccountService {
     @Override
     public Optional<UserAccount> getUserAccountById(Long accountId) {
         LOGGER.info("Finding UserAccount with ID: {}", accountId);
-        final Optional<UserAccount> foundAccount = userAccountRepository.findById(accountId);
-        return foundAccount.or(Optional::empty);
+        return userAccountRepository.findById(accountId);
+    }
+
+    @Override
+    public Optional<UserAccount> findByUsername(String username) {
+        LOGGER.info("Finding UserAccount with Username: {}", username);
+        return userAccountRepository.findByUsername(username);
     }
 
     @Override

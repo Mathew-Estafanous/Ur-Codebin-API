@@ -9,6 +9,8 @@ public interface UserAccountService {
 
     Optional<UserAccount> getUserAccountById(Long accountId);
 
+    Optional<UserAccount> findByUsername(String username);
+
     UserAccount signupNewUserAccount(SignupRequestBody signupAccount);
 
     boolean isAccountEmailTaken(String email);
