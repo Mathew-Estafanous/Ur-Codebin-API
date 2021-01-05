@@ -1,10 +1,11 @@
 package com.urcodebin.api.security;
 
 import javassist.NotFoundException;
-import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;;
+import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.properties.EncryptableProperties;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -49,8 +50,7 @@ public class SecurityConstants {
             }
             return secret;
         } catch (Exception e) {
-            System.out.println("Exception: " + e.getMessage());
-            return null;
+            throw new RuntimeException(e.getMessage());
         }
     }
 }
