@@ -1,9 +1,6 @@
 package com.urcodebin.api.error.handler;
 
-import com.urcodebin.api.error.exception.AccountInformationTakenException;
-import com.urcodebin.api.error.exception.MissingRequiredSourceCodeException;
-import com.urcodebin.api.error.exception.PasteNotFoundException;
-import com.urcodebin.api.error.exception.UserAccountNotFoundException;
+import com.urcodebin.api.error.exception.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
