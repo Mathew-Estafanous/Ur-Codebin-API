@@ -5,7 +5,6 @@ import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.properties.EncryptableProperties;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
