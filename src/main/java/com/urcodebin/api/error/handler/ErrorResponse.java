@@ -15,7 +15,9 @@ public class ErrorResponse {
     private String error;
     private String message;
 
-    public ErrorResponse() {}
+    public ErrorResponse() {
+        this.timestamp = LocalDateTime.now();
+    }
 
     public ErrorResponse(Exception e) {
         this.timestamp = LocalDateTime.now();
