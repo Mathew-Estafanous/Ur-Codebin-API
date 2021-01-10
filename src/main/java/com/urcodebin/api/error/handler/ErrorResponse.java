@@ -15,6 +15,13 @@ public class ErrorResponse {
     private String error;
     private String message;
 
+    public ErrorResponse() {}
+
+    public ErrorResponse(Exception e) {
+        this.timestamp = LocalDateTime.now();
+        this.message = e.getMessage();
+    }
+
     public LocalDateTime getTimestamp() {
         return timestamp;
     }

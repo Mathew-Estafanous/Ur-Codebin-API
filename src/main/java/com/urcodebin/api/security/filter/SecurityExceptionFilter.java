@@ -2,6 +2,7 @@ package com.urcodebin.api.security.filter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.urcodebin.api.error.exception.InvalidLoginFormatException;
 import com.urcodebin.api.error.handler.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.LocalDateTime;
 
 public class SecurityExceptionFilter extends OncePerRequestFilter {
 
@@ -27,10 +27,8 @@ public class SecurityExceptionFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (RuntimeException e) {
             LOGGER.error("Security Filter Error Occurred: {}", e.getMessage());
-            ErrorResponse errorResponse = new ErrorResponse();
-            errorResponse.setTimestamp(LocalDateTime.now());
+            ErrorResponse errorResponse = new ErrorResponse(e);
             errorResponse.setError(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-            errorResponse.setMessage(e.getMessage());
             errorResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());

@@ -4,12 +4,15 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.urcodebin.api.dto.LoginDTO;
+import com.urcodebin.api.error.exception.InvalidLoginFormatException;
+import com.urcodebin.api.security.handler.FailedAuthenticationHandler;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedCredentialsNotFoundException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -28,6 +31,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     public JWTAuthenticationFilter(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
 
+        setAuthenticationFailureHandler(new FailedAuthenticationHandler());
         //Sets the custom LOGIN url instead of using the default /login url
         setFilterProcessesUrl(LOGIN_URL);
     }
@@ -35,19 +39,21 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
                                                 HttpServletResponse response) throws AuthenticationException {
+        LoginDTO credentials;
         try {
-            LoginDTO credentials = new ObjectMapper()
+            credentials = new ObjectMapper()
                     .readValue(request.getInputStream(), LoginDTO.class);
-
-            return authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            credentials.getUsername(),
-                            credentials.getPassword(),
-                            new ArrayList<>())
-            );
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new PreAuthenticatedCredentialsNotFoundException(
+                    "Login Credentials not found in proper format. Please format login body properly.");
         }
+
+        return authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        credentials.getUsername(),
+                        credentials.getPassword(),
+                        new ArrayList<>())
+        );
     }
 
     @Override
