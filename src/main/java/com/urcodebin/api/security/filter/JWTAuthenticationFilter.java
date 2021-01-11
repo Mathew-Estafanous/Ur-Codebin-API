@@ -4,7 +4,6 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.urcodebin.api.dto.LoginDTO;
-import com.urcodebin.api.error.exception.InvalidLoginFormatException;
 import com.urcodebin.api.security.handler.FailedAuthenticationHandler;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

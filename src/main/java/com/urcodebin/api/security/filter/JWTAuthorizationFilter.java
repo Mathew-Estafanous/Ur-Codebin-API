@@ -2,8 +2,16 @@ package com.urcodebin.api.security.filter;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.urcodebin.api.error.exception.AuthorizationHeaderNotFoundException;
+import com.urcodebin.api.error.handler.ErrorResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
@@ -26,23 +34,25 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain) throws IOException, ServletException {
-        String header = request.getHeader(HEADER_STRING);
+        String token = request.getHeader(HEADER_STRING);
 
-        if(header == null || !header.startsWith(TOKEN_PREFIX)) {
-            chain.doFilter(request, response);
+        Authentication authentication;
+        try {
+            authentication = getAuthentication(token);
+        } catch (RuntimeException e) {
+            failedAuthorization(e, response);
             return;
         }
-
-        UsernamePasswordAuthenticationToken authentication = getAuthentication(request);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         chain.doFilter(request, response);
     }
 
-    private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
-        String token = request.getHeader(HEADER_STRING);
-
-        if(token == null) return null;
+    private UsernamePasswordAuthenticationToken getAuthentication(String token) throws RuntimeException {
+        if(token == null)
+            throw new AuthorizationHeaderNotFoundException();
+        else if(!token.startsWith(TOKEN_PREFIX))
+            throw new BadCredentialsException("Authentication header 'Bearer ' prefix not found.");
 
         String user = JWT.require(Algorithm.HMAC512(getSecret().getBytes()))
                 .build()
@@ -54,5 +64,23 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
         else
             return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
 
+    }
+
+    private void failedAuthorization(RuntimeException e, HttpServletResponse response) throws IOException {
+        ErrorResponse authorizationError = new ErrorResponse(e);
+        authorizationError.setStatus(HttpStatus.UNAUTHORIZED.value());
+        authorizationError.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
+
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setStatus(authorizationError.getStatus());
+        response.getWriter().write(errorResponseToJson(authorizationError));
+    }
+
+    private String errorResponseToJson(Object object) throws JsonProcessingException {
+        if (object == null) {
+            return null;
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(object);
     }
 }
