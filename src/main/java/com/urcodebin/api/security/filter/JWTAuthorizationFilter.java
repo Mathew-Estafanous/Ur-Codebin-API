@@ -30,6 +30,18 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
         super(authManager);
     }
 
+    /*
+     * Authorization filter is not needed for publicly available endpoints
+     * so this method will return TRUE when the URI is a public endpoint
+     * and does not need any authorization.
+     */
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+       String requestURI = request.getRequestURI();
+       return requestURI.equals(SIGN_UP_URL) ||
+               requestURI.equals(PUBLIC_PASTE_URL);
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,

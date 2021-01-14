@@ -3,11 +3,16 @@ package com.urcodebin.api.security;
 import javassist.NotFoundException;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.properties.EncryptableProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
+import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Properties;
 
+@Component
 public class SecurityConstants {
     
     public static final long EXPIRATION_TIME = 7_200_000; // 2 Hours
@@ -18,6 +23,14 @@ public class SecurityConstants {
     public static final String SIGN_UP_URL = "/api/account/signup";
     public static final String PUBLIC_PASTE_URL = "/api/paste/public";
 
+    protected static Environment springEnv;
+
+    @Autowired
+    public SecurityConstants(Environment springEnv) {
+        SecurityConstants.springEnv = springEnv;
+
+    }
+
     /**
      * The secret is not stored in plain text as it would raise security issues
      * as it will be publicly available in the open-source project. To ensure
@@ -27,6 +40,15 @@ public class SecurityConstants {
      * {@env JASYPT_ENCRYPTOR_PASSWORD}
      */
     public static String getSecret() {
+        if(springEnv.acceptsProfiles(Profiles.of("prod"))) {
+            return getProductionSecretKey();
+        } else {
+            return getDevelopmentSecretKey();
+        }
+
+    }
+
+    private static String getProductionSecretKey() throws RuntimeException {
         StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
         //We need the Jasypt password that is used to decrypt the SECRET property.
         encryptor.setPassword(System.getenv("JASYPT_ENCRYPTOR_PASSWORD"));
@@ -34,7 +56,7 @@ public class SecurityConstants {
         InputStream inputStream;
         try {
             Properties prop = new EncryptableProperties(encryptor);
-            String propFileName = "application.properties";
+            String propFileName = "application-prod.properties";
 
             inputStream = SecurityConstants.class.getClassLoader().getResourceAsStream(propFileName);
             if (inputStream != null) {
@@ -51,5 +73,9 @@ public class SecurityConstants {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    private static String getDevelopmentSecretKey() {
+        return "TheTopSecretKey";
     }
 }
