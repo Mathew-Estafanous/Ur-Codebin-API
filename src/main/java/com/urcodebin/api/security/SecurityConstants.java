@@ -24,11 +24,12 @@ public class SecurityConstants {
     public static final String PUBLIC_PASTE_URL = "/api/paste/public";
 
     protected static Environment springEnv;
+    public static String SECRET;
 
     @Autowired
     public SecurityConstants(Environment springEnv) {
         SecurityConstants.springEnv = springEnv;
-
+        SecurityConstants.SECRET = getSecret();
     }
 
     /**
@@ -39,7 +40,7 @@ public class SecurityConstants {
      * password which is safely stored as an environment variable called
      * {@env JASYPT_ENCRYPTOR_PASSWORD}
      */
-    public static String getSecret() {
+    private String getSecret() {
         if(springEnv.acceptsProfiles(Profiles.of("prod"))) {
             return getProductionSecretKey();
         } else {
@@ -48,7 +49,7 @@ public class SecurityConstants {
 
     }
 
-    private static String getProductionSecretKey() throws RuntimeException {
+    private String getProductionSecretKey() throws RuntimeException {
         StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
         //We need the Jasypt password that is used to decrypt the SECRET property.
         encryptor.setPassword(System.getenv("JASYPT_ENCRYPTOR_PASSWORD"));
@@ -75,7 +76,7 @@ public class SecurityConstants {
         }
     }
 
-    private static String getDevelopmentSecretKey() {
+    private String getDevelopmentSecretKey() {
         return "TheTopSecretKey";
     }
 }

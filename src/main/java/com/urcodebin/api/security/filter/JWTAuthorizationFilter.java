@@ -66,7 +66,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
         else if(!token.startsWith(TOKEN_PREFIX))
             throw new BadCredentialsException("Authentication header 'Bearer ' prefix not found.");
 
-        String user = JWT.require(Algorithm.HMAC512(getSecret().getBytes()))
+        String user = JWT.require(Algorithm.HMAC512(SECRET.getBytes()))
                 .build()
                 .verify(token.replace(TOKEN_PREFIX, ""))
                 .getSubject();
