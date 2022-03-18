@@ -6,7 +6,7 @@
   <p align="center">
     An easy to use REST API backend for the Ur-Codebin website
     <br />
-    <a href="https://urcodebin.live/"><strong>View The Website »</strong></a>
+    <a href="https://ur-codebin.herokuapp.com/"><strong>View The Website »</strong></a>
     <br />
     <br />
     <a href="https://mathew.stoplight.io/docs/ur-codebin-api">Explore the docs</a>
